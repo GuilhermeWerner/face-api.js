@@ -20,21 +20,6 @@
         </div>
 
         <div style="position: relative" class="margin">
-            <img id="inputImg" src="" style="max-width: 800px;" />
-            <canvas id="overlay2"><canvas>
-        </div>
-        <div class="row side-by-side">
-            <!-- image_selection_control -->
-            <div id="selectList"></div>
-            <button class="waves-effect waves-light btn" onclick="loadImageFromUrl()">
-                Ok
-            </button>
-            <input id="queryImgUploadInput" type="file" class="waves-effect btn bold" onchange="loadImageFromUpload()"
-                accept=".jpg, .jpeg, .png">
-            <!-- image_selection_control -->
-        </div>
-
-        <div style="position: relative" class="margin">
             <video onloadedmetadata="onPlay(this)" id="inputVideo" autoplay muted playsinline></video>
             <canvas id="overlay"><canvas>
         </div>
@@ -189,7 +174,9 @@
         updateTimeStats(Date.now() - ts)
 
         if (result) {
-            if (firstFace && withImage) {
+            if (!firstFace) {
+                firstFace = result;
+            } else {
                 const distance = faceapi.utils.round(
                     faceapi.euclideanDistance(firstFace.descriptor, result.descriptor)
                 )
@@ -282,27 +269,25 @@
         videoEl.srcObject = stream
     }
 
-    async function updateResults() {
-        if (!isFaceDetectionModelLoaded()) {
-            return
-        }
+    async function run() {
+        // load face detection and face landmark models
+        await changeFaceDetector(TINY_FACE_DETECTOR)
+        await faceapi.loadFaceLandmarkModel('/')
+        await faceapi.loadFaceRecognitionModel('/')
+        await faceapi.loadFaceExpressionModel('/')
+        changeInputSize(224)
 
-        const inputImgEl = $('#inputImg').get(0)
-        const options = getFaceDetectorOptions()
-
-        const result = await faceapi.detectSingleFace(inputImgEl, options).withFaceLandmarks().withFaceDescriptor()
-
-        if (result) {
-            firstFace = result
-            const canvas = $('#overlay2').get(0)
-            faceapi.matchDimensions(canvas, inputImgEl)
-            faceapi.draw.drawDetections(canvas, faceapi.resizeResults(result, inputImgEl))
-        }
+        // try to access users webcam and stream the images
+        // to the video element
+        const stream = await navigator.mediaDevices.getUserMedia({ video: {} })
+        const videoEl = $('#inputVideo').get(0)
+        videoEl.srcObject = stream
     }
+
+    function updateResults() { }
 
     $(document).ready(function () {
         //renderNavBar('#navbar', 'webcam_face_landmark_detection')
-        initImageSelectionControls()
         initFaceDetectionControls()
         run()
     })
