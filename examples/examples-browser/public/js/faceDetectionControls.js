@@ -10,6 +10,9 @@ let minConfidence = 0.5
 // tiny_face_detector options
 let inputSize = 512
 let scoreThreshold = 0.5
+let distanceThreshold = 0.5
+let movementThreshold = 5; // Limite de movimento em pixels
+let secondsThreshold = 5; // Limite de tempo em segundos
 
 function getFaceDetectorOptions() {
   return selectedFaceDetector === SSD_MOBILENETV1
@@ -40,6 +43,42 @@ function changeInputSize(size) {
   const inputSizeSelect = $('#inputSize')
   inputSizeSelect.val(inputSize)
   inputSizeSelect.material_select()
+}
+
+function onIncreaseDistanceThreshold() {
+  distanceThreshold = Math.min(faceapi.utils.round(distanceThreshold + 0.1), 1.0)
+  $('#distanceThreshold').val(distanceThreshold)
+  updateResults()
+}
+
+function onDecreaseDistanceThreshold() {
+  distanceThreshold = Math.max(faceapi.utils.round(distanceThreshold - 0.1), 0.1)
+  $('#distanceThreshold').val(distanceThreshold)
+  updateResults()
+}
+
+function onIncreaseMovementThreshold() {
+  movementThreshold = Math.min(faceapi.utils.round(movementThreshold + 1), 10)
+  $('#movementThreshold').val(movementThreshold)
+  updateResults()
+}
+
+function onDecreaseMovementThreshold() {
+  movementThreshold = Math.max(faceapi.utils.round(movementThreshold - 1), 0)
+  $('#movementThreshold').val(movementThreshold)
+  updateResults()
+}
+
+function onIncreaseSecondsThreshold() {
+  secondsThreshold = Math.min(faceapi.utils.round(secondsThreshold + 1), 10)
+  $('#secondsThreshold').val(secondsThreshold)
+  updateResults()
+}
+
+function onDecreaseSecondsThreshold() {
+  secondsThreshold = Math.max(faceapi.utils.round(secondsThreshold - 1), 1)
+  $('#secondsThreshold').val(secondsThreshold)
+  updateResults()
 }
 
 function onIncreaseScoreThreshold() {
